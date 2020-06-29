@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<QCARConfig xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="qcar_config.xsd">
+  <Tracking>
+    <ImageTarget name="fma" size="0.090000 0.053683" />
+    <ImageTarget name="suica" size="0.080000 0.048889" />
+    <ImageTarget name="ruler" size="0.330000 0.330000" />
+    <ImageTarget name="keyboard" size="0.370000 0.277404" />
+  </Tracking>
+</QCARConfig>

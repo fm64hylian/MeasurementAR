@@ -64,7 +64,6 @@ public class TextCMController : MonoBehaviour
             lineRenderer.SetPosition(1, posTo);
             //always looking at camera
             transform.rotation = Quaternion.LookRotation(transform.position - cam.position);
-            Debug.Log("line wid " + lineRenderer.startWidth + ", " + lineRenderer.endWidth);
         }
     }
 

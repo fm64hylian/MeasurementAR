@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System;
 using UnityEngine;
 using Vuforia;
+using UnityEngine.UI;
 
 public class PositionOnClickController : MonoBehaviour
 {
@@ -10,15 +11,22 @@ public class PositionOnClickController : MonoBehaviour
     GameObject anchorStage1;
     [SerializeField]
     GameObject anchorStage2;
+
+    [SerializeField]
+    Text txtUI;
     private PositionalDeviceTracker _deviceTracker;
 
     Vector3 initialPos;
     int hitCounts = 0;
+    MeasurePoint startPoint;
+    MeasurePoint endPoint;
 
     Vector3 tempPosition1;
 
     public void Start()
     {
+        startPoint = anchorStage1.GetComponent<MeasurePoint>();
+        endPoint = anchorStage1.GetComponent<MeasurePoint>();
         Debug.Log("STARTING DEPLOY STAGE ONCE");
         if (anchorStage1 == null)
         {
@@ -42,6 +50,44 @@ public class PositionOnClickController : MonoBehaviour
         _deviceTracker = TrackerManager.Instance.GetTracker<PositionalDeviceTracker>();
     }
 
+
+    private void Update()
+    {
+        foreach (Touch touch in Input.touches)
+        {
+            if (touch.phase == TouchPhase.Began)
+            {
+                // Construct a ray from the current touch coordinates
+                Ray ray = Camera.main.ScreenPointToRay(touch.position);
+                if (Physics.Raycast(ray))
+                {
+                    // Create a particle if hit
+                    Debug.Log("TOUCHING SCREEN on PositionOnCLickController");
+                }
+            }
+            else if (touch.phase == TouchPhase.Moved) {
+                Ray ray = Camera.main.ScreenPointToRay(touch.position);
+                if (Physics.Raycast(ray))
+                {
+                    // Create a particle if hit
+                    Debug.Log("MOVING ON SCREEN on PositionOnCLickController");
+                }
+            }
+        }
+
+        //if (Input.touchCount > 0)
+        //{
+        //    Touch touch = Input.GetTouch(0);            
+        //    Debug.Log("touched "+touch.position);
+        //    // Move the cube if the screen has the finger moving.
+        //    if (touch.phase == TouchPhase.Moved)
+        //    {
+        //        Debug.Log("moving"+ touch.position);
+        //    }
+        //}
+    }
+                
+
     /// <summary>
     /// on input touch, declare what to do here (plane version)
     /// </summary>
@@ -51,6 +97,12 @@ public class PositionOnClickController : MonoBehaviour
         if (result == null || anchorStage1 == null)
         {
             Debug.LogWarning("Hit test is invalid or AnchorStage not set");
+            txtUI.text = "Hit test is invalid or AnchorStage not set";
+            return;
+        }
+
+        //return if the points are being dragged
+        if (startPoint.IsDragging || endPoint.IsDragging) {
             return;
         }
 
@@ -61,16 +113,19 @@ public class PositionOnClickController : MonoBehaviour
                 Debug.Log("POSITIONING 1ST POINT");
                 PutMeasurePointPlane(result, anchorStage1);
                 tempPosition1 = anchorStage1.transform.position;
+                txtUI.text = "hitting starting point";
                 hitCounts++;
                 break;
             case 1:
                 Debug.Log("POSITIONING 2ND POINT");
                 PutMeasurePointPlane(result, anchorStage2);
                 anchorStage1.transform.position = tempPosition1;
+                txtUI.text = "hitting ending point";
                 hitCounts++;
                 break;
             default: //reset
                 Debug.Log("RESETING POINTS");
+                txtUI.text = "";
                 ResetPoints();
                 hitCounts = 0;
                 break;
@@ -88,6 +143,33 @@ public class PositionOnClickController : MonoBehaviour
             Debug.LogWarning("Hit test is invalid or AnchorStage not set");
             return;
         }
+
+        //return if the points are being dragged
+        if (startPoint.IsDragging || endPoint.IsDragging)
+        {
+            return;
+        }
+
+        //TODO fic get touch, not working on unity, test on android
+
+        //return if the result touched one of the measurepoints
+        //foreach (Touch touch in Input.touches)
+        //{
+        //    Debug.Log("ENTERING TOUCH");
+        //    Ray ray = Camera.main.ScreenPointToRay(touch.position);
+        //    RaycastHit hit;
+
+        //    if (Physics.Raycast(ray, out hit, 100))
+        //    {
+        //        Debug.Log("ENTERING HIT");
+        //        if (hit.collider.gameObject.GetComponent<MeasurePoint>() != null)
+        //        {
+        //            Debug.Log("TOUCHED A MEASUREPOINT");
+        //            return;
+        //        }
+
+        //    }
+        //}
 
 
         switch (hitCounts)
@@ -136,13 +218,15 @@ public class PositionOnClickController : MonoBehaviour
     /// <param name="point"></param>
     void PutMeasurePointMidAir(Transform inputPosition, GameObject point)
     {
-        var anchor = _deviceTracker.CreateMidAirAnchor(point.name, inputPosition.position, inputPosition.rotation);
+        var anchor = _deviceTracker.CreateMidAirAnchor(point.name, inputPosition.position, point.transform.rotation); //inputPosition.rotation
         if (anchor != null)
         {
             point.transform.position = inputPosition.position;
-            point.transform.rotation = inputPosition.rotation;
+            point.transform.rotation = Quaternion.identity;//inputPosition.rotation;
 
             point.SetActive(true);
+            point.GetComponent<Collider>().enabled = true;
+            point.GetComponent<MeshRenderer>().enabled = true;
         }
     }
 

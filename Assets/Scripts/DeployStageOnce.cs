@@ -47,7 +47,6 @@ public class DeployStageOnce : MonoBehaviour
             return;
         }
 
-
         switch (hitCounts) {
             case 0:
                 Debug.Log("POSITIONING 1ST POINT");
@@ -117,6 +116,8 @@ public class DeployStageOnce : MonoBehaviour
             //point.transform.localRotation = Quaternion.identity;
 
             point.SetActive(true);
+            point.GetComponent<Collider>().enabled = true;
+            point.GetComponent<MeshRenderer>().enabled = true;
             ///
             //AnchorStage.transform.parent = anchor.transform;
             //AnchorStage.transform.localPosition = Vector3.zero;

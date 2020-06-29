@@ -27,8 +27,10 @@ public class TextCMController : MonoBehaviour
         lineRenderer.textureMode = LineTextureMode.Stretch;
         lineRenderer.useWorldSpace = true;
         lineRenderer.startColor = new Color32(119, 235, 52, 255);
-        lineRenderer.startWidth = 0.03f;
-        lineRenderer.endWidth = 0.03f;
+        lineRenderer.endColor = new Color32(119, 235, 52, 255);
+        lineRenderer.startWidth = 0.01f;
+        lineRenderer.endWidth = 0.01f;
+        Debug.Log("line wid "+ lineRenderer.startWidth+", "+ lineRenderer.endWidth);
     }
 
     // Update is called once per frame
@@ -44,7 +46,7 @@ public class TextCMController : MonoBehaviour
 
         //first point active displays 0
         if (point1.activeInHierarchy && !point2.activeInHierarchy) {
-            txt.text = "0 CM";
+            txt.text = "0 cm";
             transform.position = point1.transform.position; // + Vector3.up * 0.1f;
             //always looking at camera
             transform.rotation = Quaternion.LookRotation(transform.position - cam.position);
@@ -62,6 +64,7 @@ public class TextCMController : MonoBehaviour
             lineRenderer.SetPosition(1, posTo);
             //always looking at camera
             transform.rotation = Quaternion.LookRotation(transform.position - cam.position);
+            Debug.Log("line wid " + lineRenderer.startWidth + ", " + lineRenderer.endWidth);
         }
     }
 
@@ -72,6 +75,6 @@ public class TextCMController : MonoBehaviour
         transform.position = new Vector3((from.x + to.x) / 2f, (from.y + to.y) / 2f, (from.z + to.z) / 2f);
         transform.rotation = Camera.main.transform.rotation;
         float unityU = (float)System.Math.Round(Vector3.Distance(from, to), 2);
-        return unityU >= 1 ? unityU + " MT" : unityU * 100f +" CM";
+        return unityU >= 1 ? unityU + " mt" : unityU * 100f +" cm";
     }
 }

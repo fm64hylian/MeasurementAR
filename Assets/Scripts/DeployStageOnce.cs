@@ -17,7 +17,7 @@ public class DeployStageOnce : MonoBehaviour
 
     public void Start()
     {
-        Debug.Log("STARTING DEPLY STAGE ONCE");
+        Debug.Log("STARTING DEPLOY STAGE ONCE");
         if (anchorStage1 == null)
         {
             Debug.Log("AnchorStage must be specified");

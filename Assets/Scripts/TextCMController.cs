@@ -18,6 +18,7 @@ public class TextCMController : MonoBehaviour
     static Vector3 posTo;
 
     TextMesh txt;
+    float unityU;
     // Start is called before the first frame update
     void Start()
     {
@@ -73,7 +74,16 @@ public class TextCMController : MonoBehaviour
         Vector3 to = point2.transform.position;
         transform.position = new Vector3((from.x + to.x) / 2f, (from.y + to.y) / 2f, (from.z + to.z) / 2f);
         transform.rotation = Camera.main.transform.rotation;
-        float unityU = (float)System.Math.Round(Vector3.Distance(from, to), 2);
+        unityU = (float)System.Math.Round(Vector3.Distance(from, to), 2);
+
         return unityU >= 1 ? unityU + " mt" : unityU * 100f +" cm";
+    }
+
+    public float GetUnityValue() {
+        return unityU;
+    }
+
+    public string GetTextValue() {
+        return ConvertToCM(); ;
     }
 }

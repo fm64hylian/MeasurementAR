@@ -15,9 +15,15 @@ public class PositionOnClickController : MonoBehaviour
     GameObject anchorStage1;
     [SerializeField]
     GameObject anchorStage2;
+    [SerializeField]
+    GameObject SaveMenu;
 
     [SerializeField]
     Text txtUI;
+    [SerializeField]
+    TextCMController measurementController;
+    [SerializeField]
+    Text txtSavedValue;
     private PositionalDeviceTracker _deviceTracker;
 
     Vector3 initialPos;
@@ -39,6 +45,7 @@ public class PositionOnClickController : MonoBehaviour
         initialPos = anchorStage1.transform.position;
         anchorStage1.SetActive(false);
         anchorStage2.SetActive(false);
+        SaveMenu.SetActive(false);
     }
     public void Awake()
     {
@@ -68,7 +75,8 @@ public class PositionOnClickController : MonoBehaviour
                     txtUI.text = "TOUCHING SCREEN on PositionOnCLickController";
                 }
             }
-            else if (touch.phase == TouchPhase.Moved) {
+            else if (touch.phase == TouchPhase.Moved)
+            {
                 Ray ray = Camera.main.ScreenPointToRay(touch.position);
                 if (Physics.Raycast(ray))
                 {
@@ -89,7 +97,7 @@ public class PositionOnClickController : MonoBehaviour
         //    }
         //}
     }
-                
+
 
     /// <summary>
     /// on input touch, declare what to do here (plane version)
@@ -105,7 +113,8 @@ public class PositionOnClickController : MonoBehaviour
         }
 
         //return if the points are being dragged
-        if (startPoint.IsDragging || endPoint.IsDragging) {
+        if (startPoint.IsDragging || endPoint.IsDragging || SaveMenu.activeInHierarchy)
+        {
             return;
         }
 
@@ -121,19 +130,20 @@ public class PositionOnClickController : MonoBehaviour
             case 1:
                 //Debug.Log("POSITIONING 2ND POINT");
                 PutMeasurePointPlane(result, anchorStage2);
-                anchorStage1.transform.position = tempPosition1;
-                txtUI.text = "hitting ending point";
+                anchorStage1.transform.position = tempPosition1;            
                 hitCounts++;
+                SaveMenu.SetActive(true);
+                txtUI.text = "hitting ending point, menu " + SaveMenu.activeInHierarchy;
                 break;
             default: //reset
                 //Debug.Log("RESETING POINTS");
-                txtUI.text = "RESETING POINTS";
-                ResetPoints();
-                hitCounts = 0;
+                //txtUI.text = "RESETING POINTS";
+                //ResetPoints();
+                //hitCounts = 0;
                 break;
         }
     }
-    
+
     /// <summary>
     /// on input touch, declare what to do here (mid air version)
     /// </summary>
@@ -147,9 +157,9 @@ public class PositionOnClickController : MonoBehaviour
         }
 
         //return if the points are being dragged
-        if (startPoint.IsDragging || endPoint.IsDragging)
+        if (startPoint.IsDragging || endPoint.IsDragging || SaveMenu.activeInHierarchy)
         {
-            txtUI.text = "dragging";
+            txtUI.text = "returning";
             return;
         }
 
@@ -160,21 +170,18 @@ public class PositionOnClickController : MonoBehaviour
                 PutMeasurePointMidAir(pose, anchorStage1);
                 tempPosition1 = anchorStage1.transform.position;
                 hitCounts++;
-                txtUI.text = "POSITIONING 1ST POINT, anchorStageMesh is "+ anchorStage1.GetComponent<MeshRenderer>().enabled;
+                txtUI.text = "POSITIONING 1ST POINT, anchorStageMesh is " + anchorStage1.GetComponent<MeshRenderer>().enabled;
                 break;
             case 1:
                 //Debug.Log("POSITIONING 2ND POINT");
                 PutMeasurePointMidAir(pose, anchorStage2);
                 anchorStage1.transform.position = tempPosition1;
-                txtUI.text = "POSITIONING 2ND POINT, anchorStageMesh is " + anchorStage1.GetComponent<MeshRenderer>().enabled;
-                hitCounts++;
+                SaveMenu.SetActive(true);
+                txtUI.text = "hitting ending point, menu " + SaveMenu.activeInHierarchy;
                 break;
-            default: //reset
-                //Debug.Log("RESETING POINTS");
-                ResetPoints();
-                hitCounts = 0;
-                txtUI.text = "RESETING POINTS";
-                break;
+                //default: //reset
+                //    CancelSave();
+                //    break;
         }
     }
 
@@ -194,7 +201,7 @@ public class PositionOnClickController : MonoBehaviour
             point.SetActive(true);
         }
     }
-    
+
     /// <summary>
     /// point is the  Measurepoint 1 or 2
     /// </summary>
@@ -224,5 +231,22 @@ public class PositionOnClickController : MonoBehaviour
 
         anchorStage1.SetActive(false);
         anchorStage2.SetActive(false);
+    }
+
+
+    public void SaveMeasurement()
+    {
+        txtSavedValue.text = measurementController.GetTextValue();
+        ResetPoints();
+        hitCounts = 0;
+        SaveMenu.SetActive(false);
+    }
+
+    public void CancelSave()
+    {
+        ResetPoints();
+        hitCounts = 0;
+        txtUI.text = "RESETING POINTS";
+        SaveMenu.SetActive(false);
     }
 }

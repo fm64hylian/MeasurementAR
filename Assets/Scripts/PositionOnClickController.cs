@@ -149,6 +149,7 @@ public class PositionOnClickController : MonoBehaviour
         //return if the points are being dragged
         if (startPoint.IsDragging || endPoint.IsDragging)
         {
+            txtUI.text = "dragging";
             return;
         }
 
@@ -159,13 +160,13 @@ public class PositionOnClickController : MonoBehaviour
                 PutMeasurePointMidAir(pose, anchorStage1);
                 tempPosition1 = anchorStage1.transform.position;
                 hitCounts++;
-                txtUI.text = "POSITIONING 1ST POINT";
+                txtUI.text = "POSITIONING 1ST POINT, anchorStageMesh is "+ anchorStage1.GetComponent<MeshRenderer>().enabled;
                 break;
             case 1:
                 //Debug.Log("POSITIONING 2ND POINT");
                 PutMeasurePointMidAir(pose, anchorStage2);
                 anchorStage1.transform.position = tempPosition1;
-                txtUI.text = "POSITIONING 2ND POINT";
+                txtUI.text = "POSITIONING 2ND POINT, anchorStageMesh is " + anchorStage1.GetComponent<MeshRenderer>().enabled;
                 hitCounts++;
                 break;
             default: //reset

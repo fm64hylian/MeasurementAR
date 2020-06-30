@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public enum PointType {
     Start,
@@ -10,6 +11,8 @@ public enum PointType {
 
 public class MeasurePoint : MonoBehaviour
 {
+    [SerializeField]
+    Text uiText;
     public PointType pointType;
     public bool IsDragging = false;
     Vector3 screenPoint;
@@ -36,7 +39,8 @@ public class MeasurePoint : MonoBehaviour
 
     void MovePoint()
     {
-        Debug.Log("DRAGGING MEASUREPOINT "+pointType);
+        //Debug.Log("DRAGGING MEASUREPOINT "+pointType);
+        uiText.text = "DRAGGING MEASUREPOINT " + pointType;
         Vector3 mousePosition = new Vector3(Input.mousePosition.x, Input.mousePosition.y, transform.position.z);
         Vector3 objPosition = Camera.main.ScreenToWorldPoint(mousePosition);
 

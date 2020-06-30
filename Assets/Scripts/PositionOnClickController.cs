@@ -5,6 +5,10 @@ using UnityEngine;
 using Vuforia;
 using UnityEngine.UI;
 
+/// <summary>
+/// class based on DeployStageOnce, used in previous versions of Vuforia to 
+/// instanciate only one new game object every time a user clicked
+/// </summary>
 public class PositionOnClickController : MonoBehaviour
 {
     [SerializeField]
@@ -27,7 +31,6 @@ public class PositionOnClickController : MonoBehaviour
     {
         startPoint = anchorStage1.GetComponent<MeasurePoint>();
         endPoint = anchorStage1.GetComponent<MeasurePoint>();
-        Debug.Log("STARTING DEPLOY STAGE ONCE");
         if (anchorStage1 == null)
         {
             Debug.Log("AnchorStage must be specified");
@@ -62,7 +65,7 @@ public class PositionOnClickController : MonoBehaviour
                 if (Physics.Raycast(ray))
                 {
                     // Create a particle if hit
-                    Debug.Log("TOUCHING SCREEN on PositionOnCLickController");
+                    txtUI.text = "TOUCHING SCREEN on PositionOnCLickController";
                 }
             }
             else if (touch.phase == TouchPhase.Moved) {
@@ -70,7 +73,7 @@ public class PositionOnClickController : MonoBehaviour
                 if (Physics.Raycast(ray))
                 {
                     // Create a particle if hit
-                    Debug.Log("MOVING ON SCREEN on PositionOnCLickController");
+                    txtUI.text = "MOVING ON SCREEN on PositionOnCLickController";
                 }
             }
         }
@@ -106,26 +109,25 @@ public class PositionOnClickController : MonoBehaviour
             return;
         }
 
-
         switch (hitCounts)
         {
             case 0:
-                Debug.Log("POSITIONING 1ST POINT");
+                //Debug.Log("POSITIONING 1ST POINT");
                 PutMeasurePointPlane(result, anchorStage1);
                 tempPosition1 = anchorStage1.transform.position;
                 txtUI.text = "hitting starting point";
                 hitCounts++;
                 break;
             case 1:
-                Debug.Log("POSITIONING 2ND POINT");
+                //Debug.Log("POSITIONING 2ND POINT");
                 PutMeasurePointPlane(result, anchorStage2);
                 anchorStage1.transform.position = tempPosition1;
                 txtUI.text = "hitting ending point";
                 hitCounts++;
                 break;
             default: //reset
-                Debug.Log("RESETING POINTS");
-                txtUI.text = "";
+                //Debug.Log("RESETING POINTS");
+                txtUI.text = "RESETING POINTS";
                 ResetPoints();
                 hitCounts = 0;
                 break;
@@ -150,46 +152,27 @@ public class PositionOnClickController : MonoBehaviour
             return;
         }
 
-        //TODO fic get touch, not working on unity, test on android
-
-        //return if the result touched one of the measurepoints
-        //foreach (Touch touch in Input.touches)
-        //{
-        //    Debug.Log("ENTERING TOUCH");
-        //    Ray ray = Camera.main.ScreenPointToRay(touch.position);
-        //    RaycastHit hit;
-
-        //    if (Physics.Raycast(ray, out hit, 100))
-        //    {
-        //        Debug.Log("ENTERING HIT");
-        //        if (hit.collider.gameObject.GetComponent<MeasurePoint>() != null)
-        //        {
-        //            Debug.Log("TOUCHED A MEASUREPOINT");
-        //            return;
-        //        }
-
-        //    }
-        //}
-
-
         switch (hitCounts)
         {
             case 0:
-                Debug.Log("POSITIONING 1ST POINT");
+                //Debug.Log("POSITIONING 1ST POINT");
                 PutMeasurePointMidAir(pose, anchorStage1);
                 tempPosition1 = anchorStage1.transform.position;
                 hitCounts++;
+                txtUI.text = "POSITIONING 1ST POINT";
                 break;
             case 1:
-                Debug.Log("POSITIONING 2ND POINT");
+                //Debug.Log("POSITIONING 2ND POINT");
                 PutMeasurePointMidAir(pose, anchorStage2);
                 anchorStage1.transform.position = tempPosition1;
+                txtUI.text = "POSITIONING 2ND POINT";
                 hitCounts++;
                 break;
             default: //reset
-                Debug.Log("RESETING POINTS");
+                //Debug.Log("RESETING POINTS");
                 ResetPoints();
                 hitCounts = 0;
+                txtUI.text = "RESETING POINTS";
                 break;
         }
     }

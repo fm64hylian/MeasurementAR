@@ -170,6 +170,13 @@ public class PositionOnClickController : MonoBehaviour
                 PutMeasurePointMidAir(pose, anchorStage1);
                 tempPosition1 = anchorStage1.transform.position;
                 hitCounts++;
+                //testing if its still false, not working on device
+                if (!anchorStage1.GetComponent<MeshRenderer>().enabled) {
+                    anchorStage1.SetActive(true);
+                    anchorStage1.GetComponent<Collider>().enabled = true;
+                    anchorStage1.GetComponent<MeshRenderer>().enabled = true;
+                }
+                //
                 txtUI.text = "POSITIONING 1ST POINT, anchorStageMesh is " + anchorStage1.GetComponent<MeshRenderer>().enabled;
                 break;
             case 1:

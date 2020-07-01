@@ -12,11 +12,15 @@ using UnityEngine.UI;
 public class PositionOnClickController : MonoBehaviour
 {
     [SerializeField]
+    GameObject MidAirPositioner;
+    [SerializeField]
     GameObject anchorStage1;
     [SerializeField]
     GameObject anchorStage2;
     [SerializeField]
     GameObject SaveMenu;
+    [SerializeField]
+    ScrollRect BodyPartMenu;
 
     [SerializeField]
     Text txtUI;
@@ -26,12 +30,18 @@ public class PositionOnClickController : MonoBehaviour
     Text txtSavedValue;
     private PositionalDeviceTracker _deviceTracker;
 
+    //AR 
     Vector3 initialPos;
     int hitCounts = 0;
     MeasurePoint startPoint;
     MeasurePoint endPoint;
 
     Vector3 tempPosition1;
+
+
+    /// body parts
+    public List<BodyPartMeasure> BodyParts = new List<BodyPartMeasure>();
+    BodyPartUI SelectedPartUI;
 
     public void Start()
     {
@@ -46,7 +56,35 @@ public class PositionOnClickController : MonoBehaviour
         anchorStage1.SetActive(false);
         anchorStage2.SetActive(false);
         SaveMenu.SetActive(false);
+
+        MidAirPositioner.SetActive(false);
+        SetGridValues();
     }
+
+    void SetGridValues()
+    {
+
+        //BodyPartMenu.GetComponent <>
+        GameObject gridContent = BodyPartMenu.content.gameObject;
+        for (int i = 1; i < System.Enum.GetValues(typeof(BodyPart)).Length; i++)
+        {
+            BodyParts.Add(new BodyPartMeasure((BodyPart)i, 0f));
+
+            GameObject bodyPrefab = Instantiate(Resources.Load("Prefabs/BodyPartUI")) as GameObject;
+            BodyPartUI bodyUI = bodyPrefab.GetComponent<BodyPartUI>();
+            bodyUI.SetData(BodyParts[i - 1]);
+            bodyUI.OnSelected = OnBodyPartSelected;
+            bodyUI.OnSaved = OnBodyPartSaved;
+
+            bodyUI.gameObject.transform.SetParent(gridContent.transform);
+            //bodyUI.gameObject.transform.parent = gridContent.transform;
+            bodyUI.gameObject.transform.localScale = Vector3.one;
+        }
+
+        BodyPartMenu.gameObject.SetActive(false);
+    }
+
+
     public void Awake()
     {
         VuforiaARController.Instance.RegisterVuforiaStartedCallback(OnVuforiaStarted);
@@ -63,39 +101,6 @@ public class PositionOnClickController : MonoBehaviour
 
     private void Update()
     {
-        foreach (Touch touch in Input.touches)
-        {
-            if (touch.phase == TouchPhase.Began)
-            {
-                // Construct a ray from the current touch coordinates
-                Ray ray = Camera.main.ScreenPointToRay(touch.position);
-                if (Physics.Raycast(ray))
-                {
-                    // Create a particle if hit
-                    txtUI.text = "TOUCHING SCREEN on PositionOnCLickController";
-                }
-            }
-            else if (touch.phase == TouchPhase.Moved)
-            {
-                Ray ray = Camera.main.ScreenPointToRay(touch.position);
-                if (Physics.Raycast(ray))
-                {
-                    // Create a particle if hit
-                    txtUI.text = "MOVING ON SCREEN on PositionOnCLickController";
-                }
-            }
-        }
-
-        //if (Input.touchCount > 0)
-        //{
-        //    Touch touch = Input.GetTouch(0);            
-        //    Debug.Log("touched "+touch.position);
-        //    // Move the cube if the screen has the finger moving.
-        //    if (touch.phase == TouchPhase.Moved)
-        //    {
-        //        Debug.Log("moving"+ touch.position);
-        //    }
-        //}
     }
 
 
@@ -105,6 +110,11 @@ public class PositionOnClickController : MonoBehaviour
     /// <param name="result"></param>
     public void OnInteractivePlaneHit(HitTestResult result)
     {
+        if (!MidAirPositioner.activeInHierarchy)
+        {
+            return;
+        }
+
         if (result == null || anchorStage1 == null)
         {
             Debug.LogWarning("Hit test is invalid or AnchorStage not set");
@@ -130,7 +140,7 @@ public class PositionOnClickController : MonoBehaviour
             case 1:
                 //Debug.Log("POSITIONING 2ND POINT");
                 PutMeasurePointPlane(result, anchorStage2);
-                anchorStage1.transform.position = tempPosition1;            
+                anchorStage1.transform.position = tempPosition1;
                 hitCounts++;
                 SaveMenu.SetActive(true);
                 txtUI.text = "hitting ending point, menu " + SaveMenu.activeInHierarchy;
@@ -171,7 +181,8 @@ public class PositionOnClickController : MonoBehaviour
                 tempPosition1 = anchorStage1.transform.position;
                 hitCounts++;
                 //testing if its still false, not working on device
-                if (!anchorStage1.GetComponent<MeshRenderer>().enabled) {
+                if (!anchorStage1.GetComponent<MeshRenderer>().enabled)
+                {
                     anchorStage1.SetActive(true);
                     anchorStage1.GetComponent<Collider>().enabled = true;
                     anchorStage1.GetComponent<MeshRenderer>().enabled = true;
@@ -240,13 +251,44 @@ public class PositionOnClickController : MonoBehaviour
         anchorStage2.SetActive(false);
     }
 
+    void OnBodyPartSelected(BodyPartUI partUI)
+    {
+        SelectedPartUI = partUI;
+
+        //enter AR mode
+        BodyPartMenu.gameObject.SetActive(!BodyPartMenu.gameObject.activeInHierarchy);
+        MidAirPositioner.SetActive(true);
+        //ToggleBodyMenu();
+    }
+
+    void OnBodyPartSaved(BodyPartUI partUI)
+    {
+        BodyPartMeasure modelPart = BodyParts.Find(x => x.Part.Equals(SelectedPartUI.BodyPart.Part));
+        if (modelPart != null)
+        {
+            Debug.Log("saving bodypart value");
+            //save on model
+            modelPart.Cm = measurementController.GetUnityValue() * 100f;
+
+            //update UI
+            partUI.UpdateMeasure(System.Math.Round(modelPart.Cm, 2).ToString());
+            partUI.IsSet = true;
+
+            txtSavedValue.text = measurementController.GetTextValue();
+            ResetPoints();
+            hitCounts = 0;
+            SaveMenu.SetActive(false);
+            MidAirPositioner.SetActive(false);
+        }
+    }
+
+
+    /////  UI 
 
     public void SaveMeasurement()
     {
-        txtSavedValue.text = measurementController.GetTextValue();
-        ResetPoints();
-        hitCounts = 0;
-        SaveMenu.SetActive(false);
+        Debug.Log("on save measurement button");
+        SelectedPartUI.OnPartSaved();
     }
 
     public void CancelSave()
@@ -255,5 +297,15 @@ public class PositionOnClickController : MonoBehaviour
         hitCounts = 0;
         txtUI.text = "RESETING POINTS";
         SaveMenu.SetActive(false);
+    }
+
+
+    public void ToggleBodyMenu()
+    {
+        BodyPartMenu.gameObject.SetActive(!BodyPartMenu.gameObject.activeInHierarchy);
+        if (MidAirPositioner.activeInHierarchy)
+        {
+            MidAirPositioner.SetActive(false);
+        }
     }
 }
